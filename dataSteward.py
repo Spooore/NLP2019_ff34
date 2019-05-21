@@ -1,20 +1,31 @@
 import os
 import shutil
 import csv
+from tika import parser
+
+
 
 csv_out = 'dictionary_combained.csv'
 SrcFolder = "/media/root/f17bbdca-3166-4f69-8193-546918bcb1cf/NLP"
-def GetArticlesList():
+UnifiedSrcFolder = "/media/root/f17bbdca-3166-4f69-8193-546918bcb1cf/NLP_combained"
+pathToSave =  "/media/root/f17bbdca-3166-4f69-8193-546918bcb1cf/Texted"
+
+
+def GetArticlesList(src):
     UniqueArticlesList=[]
-    for root, dirs, files in os.walk((os.path.normpath(SrcFolder)), topdown=True):
+    Fullpath=[]
+    for root, dirs, files in os.walk((os.path.normpath(src)), topdown=True):
         for name in os.walk((os.path.normpath(root)), topdown=True):
             for f in name:
                 if isinstance(f, (list,)):
                     for l in f:
                         if ('.pdf' in str(l) or '.PDF' in str(l)) and str(l) not in UniqueArticlesList:
                             UniqueArticlesList.append(str(l))
+        for f in files:
+            if os.path.abspath(os.path.join(root, f)) not in Fullpath:
+                Fullpath.append(os.path.abspath(os.path.join(root, f)))                           
     UniqueArticlesList.sort()
-    return UniqueArticlesList
+    return [UniqueArticlesList,Fullpath]
 
 def UnifyDictionaries():
     CSVFiles=[]
@@ -45,6 +56,23 @@ def UnifyDictionaries():
     return CSVFiles
 
 
+def toText(path):
+    raw = parser.from_file(path)
+    return raw['content']
 
-artList=GetArticlesList()
+
+artList=GetArticlesList(SrcFolder)[0]
+unifiedList=GetArticlesList(UnifiedSrcFolder)[1]
 dictList=UnifyDictionaries()
+
+for art in unifiedList:
+    new_path = pathToSave + "/" + art.split("/")[-1][0:-4] + ".txt"
+    print(new_path)
+    f = open(new_path, "w+")
+    try:
+        safe_text = toText(art).encode('utf-8', errors='ignore')
+    except Exception:
+        pass
+    safe_text = str(safe_text).replace('\\', '\\\\').replace('"', '\\"').replace('\\n','\n').replace("\\","")
+    f.write(safe_text)
+    f.close()
