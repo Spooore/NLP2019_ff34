@@ -60,19 +60,21 @@ def toText(path):
     raw = parser.from_file(path)
     return raw['content']
 
+def textify(artList):
+    for art in artList:
+        new_path = pathToSave + "/" + art.split("/")[-1][0:-4] + ".txt"
+        print(new_path)
+        f = open(new_path, "w+")
+        try:
+            safe_text = toText(art).encode('utf-8', errors='ignore')
+        except Exception:
+            pass
+        safe_text = str(safe_text).replace('\\', '\\\\').replace('"', '\\"').replace('\\n','\n').replace("\\","")
+        f.write(safe_text)
+        f.close()
 
-artList=GetArticlesList(SrcFolder)[0]
-unifiedList=GetArticlesList(UnifiedSrcFolder)[1]
-dictList=UnifyDictionaries()
+# artList=GetArticlesList(SrcFolder)[0]
+# unifiedList=GetArticlesList(UnifiedSrcFolder)[1]
+# dictList=UnifyDictionaries()
+# textify(unifiedList)
 
-for art in unifiedList:
-    new_path = pathToSave + "/" + art.split("/")[-1][0:-4] + ".txt"
-    print(new_path)
-    f = open(new_path, "w+")
-    try:
-        safe_text = toText(art).encode('utf-8', errors='ignore')
-    except Exception:
-        pass
-    safe_text = str(safe_text).replace('\\', '\\\\').replace('"', '\\"').replace('\\n','\n').replace("\\","")
-    f.write(safe_text)
-    f.close()
